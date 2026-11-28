@@ -78,4 +78,36 @@ void main() {
     sm.reset();
     expect(sm.state, DrowsinessState.alert);
   });
+
+  test('goes to warning when head tilts sideways for 2 seconds', () {
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, headZ: 25, now: now);
+    expect(sm.state, DrowsinessState.alert);
+
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, headZ: 25, now: now.add(const Duration(seconds: 2)));
+    expect(sm.state, DrowsinessState.warning);
+  });
+
+  test('goes to warning when head turns far left for 2 seconds', () {
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, headY: 35, now: now);
+    expect(sm.state, DrowsinessState.alert);
+
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, headY: 35, now: now.add(const Duration(seconds: 2)));
+    expect(sm.state, DrowsinessState.warning);
+  });
+
+  test('goes to warning after 3 yawns in 60 seconds', () {
+    // Yawn 1: mouth opens then closes
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, isMouthOpen: true, now: now);
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, isMouthOpen: false, now: now.add(const Duration(seconds: 5)));
+    expect(sm.state, DrowsinessState.alert);
+
+    // Yawn 2
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, isMouthOpen: true, now: now.add(const Duration(seconds: 20)));
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, isMouthOpen: false, now: now.add(const Duration(seconds: 25)));
+    expect(sm.state, DrowsinessState.alert);
+
+    // Yawn 3 — this should trigger warning
+    sm.update(faceDetected: true, leftEyeOpen: 0.9, rightEyeOpen: 0.9, headX: 0, isMouthOpen: true, now: now.add(const Duration(seconds: 40)));
+    expect(sm.state, DrowsinessState.warning);
+  });
 }
