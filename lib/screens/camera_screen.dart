@@ -61,6 +61,15 @@ class _CameraScreenState extends State<CameraScreen> {
           return;
         }
 
+// Calculate mouth open (after getting the face)
+bool isMouthOpen = false;
+final noseBase = face.getLandmark(FaceLandmarkType.noseBase);
+final bottomMouth = face.getLandmark(FaceLandmarkType.bottomMouth);
+if (noseBase != null && bottomMouth != null) {
+  final distance = (bottomMouth.position.y - noseBase.position.y).abs();
+  isMouthOpen = distance > 50;  // tune this threshold on your phone
+}
+
         final face = faces.first;
         final leftEye = face.leftEyeOpenProbability ?? -1;
         final rightEye = face.rightEyeOpenProbability ?? -1;
